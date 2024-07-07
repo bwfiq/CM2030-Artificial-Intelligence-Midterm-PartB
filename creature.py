@@ -102,6 +102,14 @@ class Creature:
         dist = np.linalg.norm(p1-p2)
         return dist 
 
+    def get_distance_from_point(self, point):
+        if self.start_position is None or point is None:
+            return 0
+        p1 = np.asarray(self.start_position)
+        p2 = np.asarray(point)
+        dist = np.linalg.norm(p1-p2)
+        return dist 
+
     def update_dna(self, dna):
         self.dna = dna
         self.flat_links = None
