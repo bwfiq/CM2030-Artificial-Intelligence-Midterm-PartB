@@ -3,10 +3,12 @@ import genome
 import creature
 import population
 import simulation
+import time
 
+start_time = time.time()
 pop = population.Population(pop_size=10, gene_count=3)
 sim = simulation.ThreadedSim(pool_size=10)
-for iteration in range(1000):
+for iteration in range(100):
     # Run the simulation and get the fitnesses
     sim.eval_population(pop, 2400) # 10 seconds for each creature
     fits = [cr.get_distance_travelled() for cr in pop.creatures] # old fitness function
@@ -47,3 +49,5 @@ for iteration in range(1000):
             break
 
     pop.creatures = new_creatures
+end_time = time.time()
+print("Time taken:", end_time - start_time)
