@@ -145,7 +145,7 @@ class Genome():
         return g3
 
     @staticmethod
-    def point_mutate(genome, rate, amount):
+    def point_mutate(genome, rate):
         new_genome = copy.copy(genome)
         for gene in new_genome:
             for i in range(len(gene)):
