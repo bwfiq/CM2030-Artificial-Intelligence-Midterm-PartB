@@ -40,6 +40,7 @@ class Creature:
         self.motors = None
         self.start_position = None
         self.last_position = None
+        self.fitness = 0
 
     def get_flat_links(self):
         if self.flat_links == None:
@@ -108,3 +109,9 @@ class Creature:
         self.motors = None
         self.start_position = None
         self.last_position = None
+        
+    def set_fitness(self, fitness):
+        self.fitness = fitness
+    
+    def get_fitness(self):
+        return self.fitness
