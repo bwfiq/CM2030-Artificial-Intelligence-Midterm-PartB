@@ -64,7 +64,10 @@ class Simulation:
                 break
             else:
                 cr.update_position(pos)
-                cr.set_fitness(cr.get_distance_travelled())
+                # find distance of pos from 0,0,4
+                distance_from_peak = np.linalg.norm(np.array(pos) - np.array([0, 0, 4]))
+                #cr.set_fitness(distance_from_peak)
+                cr.set_fitness(1.0 / distance_from_peak)
 
 class ThreadedSim:
     def __init__(self, pool_size):

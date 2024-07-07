@@ -7,28 +7,21 @@ import time
 
 start_time = time.time()
 pop = population.Population(pop_size=10, gene_count=3)
-sim = simulation.ThreadedSim(pool_size=10)
+sim = simulation.ThreadedSim(pool_size=16)
 for iteration in range(100):
     # Run the simulation and get the fitnesses
     sim.eval_population(pop, 2400) # 10 seconds for each creature
-    fits = [cr.get_distance_travelled() for cr in pop.creatures] # old fitness function
-    #fits = [cr.get_fitness() for cr in pop.creatures]
-    links = [len(cr.get_expanded_links()) for cr in pop.creatures]
-    print(iteration, 
-          "fittest:", np.round(np.max(fits), 3), 
-          "mean:", np.round(np.mean(fits), 3), 
-          "mean links", np.round(np.mean(links)), 
-          "max links", np.round(np.max(links)))
+    fits = [cr.get_fitness() for cr in pop.creatures]
+    #print("fits", fits)
+    print(iteration, "fittest:", np.round(np.max(fits), 3), "mean:", np.round(np.mean(fits), 3))
     
-    # Genetic algorithm   
-    fit_map = population.Population.get_fitness_map(fits)
+    # Genetic algorithm 
+    # Find the two best parents
     new_creatures = []
+    p1 = pop.creatures[np.argmax(fits)]
+    fits[np.argmax(fits)] = 0 # remove the best parent from the list
+    p2 = pop.creatures[np.argmax(fits)]
     for i in range(len(pop.creatures)):
-        p1_ind = population.Population.select_parent(fit_map)
-        p2_ind = population.Population.select_parent(fit_map)
-        p1 = pop.creatures[p1_ind]
-        p2 = pop.creatures[p2_ind]
-        # now we have the parents!
         dna = genome.Genome.crossover(p1.dna, p2.dna)
         dna = genome.Genome.point_mutate(dna, rate=0.1, amount=0.25)
         dna = genome.Genome.shrink_mutate(dna, rate=0.25)
@@ -37,17 +30,20 @@ for iteration in range(100):
         cr.update_dna(dna)
         new_creatures.append(cr)
     
-    # Get the best creature from each generation and save it to file as well as allow it to be in the next generation
-    max_fit = np.max(fits)
-    for cr in pop.creatures:
-        if cr.get_distance_travelled() == max_fit:
-            new_cr = creature.Creature(1)
-            new_cr.update_dna(cr.dna)
-            new_creatures[0] = new_cr
-            filename = "elite_"+str(iteration)+".csv"
-            genome.Genome.to_csv(cr.dna, filename)
-            break
-
+    # Replace the first two creatures with the parents
+    new_cr1 = creature.Creature(1)
+    new_cr1.update_dna(p1.dna)
+    new_creatures[0] = new_cr1
+    new_cr2 = creature.Creature(1)
+    new_cr2.update_dna(p2.dna)
+    new_creatures[1] = new_cr2
+    
+    # Get the best creature from each generation and save it to file
+    filename = "elite_" + str(iteration) + ".csv"
+    genome.Genome.to_csv(p1.dna, filename)
+    #print ("Elite saved to", filename, "with fitness", p1.get_fitness())
+    
+    # Get the new creatures ready for next simulation
     pop.creatures = new_creatures
 end_time = time.time()
 print("Time taken:", end_time - start_time)
