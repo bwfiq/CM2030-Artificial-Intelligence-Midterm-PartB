@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import copy 
 import random
@@ -5,16 +6,42 @@ import random
 class Genome():
     @staticmethod 
     def get_random_gene(length):
+        """
+        Generates a random gene as a numpy array.
+        
+        Parameters:
+        length (int): The length of the gene to be generated.
+        
+        Returns:
+        numpy.ndarray: A numpy array containing random values.
+        """
         gene = np.array([np.random.random() for i in range(length)])
         return gene
     
     @staticmethod 
     def get_random_genome(gene_length, gene_count):
+        """
+        Generates a random genome consisting of multiple genes.
+        
+        Parameters:
+        gene_length (int): The length of each gene.
+        gene_count (int): The number of genes in the genome.
+        
+        Returns:
+        list: A list of numpy arrays representing the genome.
+        """
         genome = [Genome.get_random_gene(gene_length) for i in range(gene_count)]
         return genome
 
     @staticmethod
     def get_gene_spec():
+        """
+        Defines the specification for each gene in the genome.
+        
+        Returns:
+        dict: A dictionary where each key is a gene feature and its value is another dictionary 
+            containing the scale and index of the feature.
+        """
         gene_spec =  {"link-shape":{"scale":1}, 
             "link-length": {"scale":2},
             "link-radius": {"scale":1},
@@ -65,7 +92,6 @@ class Genome():
                 c_copy = copy.copy(c)
                 c_copy.parent_name = uniq_parent_name
                 uniq_name = c_copy.name + str(len(exp_links))
-                #print("exp: ", c.name, " -> ", uniq_name)
                 c_copy.name = uniq_name
                 c_copy.sibling_ind = sibling_ind
                 exp_links.append(c_copy)
@@ -82,7 +108,6 @@ class Genome():
             parent_ind = gdict["joint-parent"] * len(parent_names)
             assert parent_ind < len(parent_names), "genome.py: parent ind too high: " + str(parent_ind) + "got: " + str(parent_names)
             parent_name = parent_names[int(parent_ind)]
-            #print("available parents: ", parent_names, "chose", parent_name)
             recur = gdict["link-recurrence"]
             link = URDFLink(name=link_name, 
                             parent_name=parent_name, 
@@ -103,11 +128,10 @@ class Genome():
                             control_amp=gdict["control-amp"],
                             control_freq=gdict["control-freq"])
             links.append(link)
-            if link_ind != 0:# don't re-add the first link
+            if link_ind != 0:
                 parent_names.append(link_name)
             link_ind = link_ind + 1
 
-        # now just fix the first link so it links to nothing
         links[0].parent_name = "None"
         return links
 
@@ -157,13 +181,18 @@ class Genome():
 
     @staticmethod
     def to_csv(dna, csv_file):
+        subfolder = "csv"
+        if not os.path.exists(subfolder):
+            os.makedirs(subfolder)
+        
+        filename = os.path.join(subfolder, csv_file)
         csv_str = ""
         for gene in dna:
             for val in gene:
                 csv_str = csv_str + str(val) + ","
             csv_str = csv_str + '\n'
 
-        with open(csv_file, 'w') as f:
+        with open(filename, 'w') as f:
             f.write(csv_str)
 
     @staticmethod
@@ -218,7 +247,7 @@ class URDFLink:
         self.sibling_ind = 1
 
     def to_link_element(self, adom):
-        #         <link name="base_link">
+        #   <link name="base_link">
         #     <visual>
         #       <geometry>
         #         <cylinder length="0.6" radius="0.25"/>
@@ -237,22 +266,20 @@ class URDFLink:
   
         link_tag = adom.createElement("link")
         link_tag.setAttribute("name", self.name)
+        
         vis_tag = adom.createElement("visual")
         geom_tag = adom.createElement("geometry")
         cyl_tag = adom.createElement("cylinder")
         cyl_tag.setAttribute("length", str(self.link_length))
         cyl_tag.setAttribute("radius", str(self.link_radius))
-        
         geom_tag.appendChild(cyl_tag)
         vis_tag.appendChild(geom_tag)
-        
         
         coll_tag = adom.createElement("collision")
         c_geom_tag = adom.createElement("geometry")
         c_cyl_tag = adom.createElement("cylinder")
         c_cyl_tag.setAttribute("length", str(self.link_length))
         c_cyl_tag.setAttribute("radius", str(self.link_radius))
-        
         c_geom_tag.appendChild(c_cyl_tag)
         coll_tag.appendChild(c_geom_tag)
         
@@ -276,7 +303,6 @@ class URDFLink:
         inertial_tag.appendChild(mass_tag)
         inertial_tag.appendChild(inertia_tag)
         
-
         link_tag.appendChild(vis_tag)
         link_tag.appendChild(coll_tag)
         link_tag.appendChild(inertial_tag)
@@ -284,7 +310,7 @@ class URDFLink:
         return link_tag
 
     def to_joint_element(self, adom):
-        #           <joint name="base_to_sub2" type="revolute">
+        #   <joint name="base_to_sub2" type="revolute">
         #     <parent link="base_link"/>
         #     <child link="sub_link2"/>
         #     <axis xyz="1 0 0"/>
