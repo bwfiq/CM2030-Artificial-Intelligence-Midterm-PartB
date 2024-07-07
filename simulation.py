@@ -1,6 +1,7 @@
 import pybullet as p
 import pybullet_data
 import numpy as np
+import os
 from multiprocessing import Pool
 
 class Simulation: 
@@ -58,16 +59,18 @@ class Simulation:
                     
             # Update the creature's position
             pos, _ = p.getBasePositionAndOrientation(cid, physicsClientId=pid)
-            # Kill the creature if it goes out of bounds
-            if pos[0] > arena_size/2 or pos[0] < -arena_size/2 or pos[1] > arena_size/2 or pos[1] < -arena_size/2:
-                cr.set_fitness(0)
-                break
-            else:
-                cr.update_position(pos)
-                # find distance of pos from 0,0,4
-                distance_from_peak = np.linalg.norm(np.array(pos) - np.array([0, 0, 4]))
-                #cr.set_fitness(distance_from_peak)
-                cr.set_fitness(1.0 / distance_from_peak)
+        
+        # delete file created
+        os.remove(xml_file)
+        # Kill the creature if it goes out of bounds
+        if pos[0] > arena_size/2 or pos[0] < -arena_size/2 or pos[1] > arena_size/2 or pos[1] < -arena_size/2:
+            cr.set_fitness(0)
+        else:
+            cr.update_position(pos)
+            # find distance of pos from 0,0,4
+            distance_from_peak = np.linalg.norm(np.array(pos) - np.array([0, 0, 4]))
+            #cr.set_fitness(distance_from_peak)
+            cr.set_fitness(1.0 / distance_from_peak)
 
 class ThreadedSim:
     def __init__(self, pool_size):
