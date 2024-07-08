@@ -56,17 +56,16 @@ class Simulation:
                             targetVelocity=m.get_output(), 
                             force = 5, 
                             physicsClientId=self.physicsClientId)
-                    
             # Update the creature's position
             pos, _ = p.getBasePositionAndOrientation(cid, physicsClientId=pid)
+            cr.update_position(pos)
         
         # delete file created
         os.remove(xml_file)
-        # Kill the creature if it goes out of bounds
+        # Update fitness
         if pos[0] > arena_size/2 or pos[0] < -arena_size/2 or pos[1] > arena_size/2 or pos[1] < -arena_size/2:
             cr.set_fitness(0)
         else:
-            cr.update_position(pos)
             # find distance of pos from 0,0,4
             distance_from_peak = np.linalg.norm(np.array(pos) - np.array([0, 0, 4]))
             #cr.set_fitness(distance_from_peak)
