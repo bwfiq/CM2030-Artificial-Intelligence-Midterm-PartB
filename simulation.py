@@ -70,9 +70,7 @@ class Simulation:
         if pos[0] > arena_size/2 or pos[0] < -arena_size/2 or pos[1] > arena_size/2 or pos[1] < -arena_size/2:
             cr.set_fitness(0)
         else:
-            # find distance of pos from 0,0,4
             distance_from_peak = np.linalg.norm(np.array(pos) - np.array([0, 0, 4]))
-            #cr.set_fitness(distance_from_peak)
             cr.set_fitness(1.0 / distance_from_peak)
 
 class ThreadedSim:
